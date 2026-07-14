@@ -1,21 +1,18 @@
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
+from pages.login_page import LoginPage
 
 
 def test_saucedemo_login(page: Page):
-    # 1. 打开浏览器，访问目标网站
-    page.goto("https://www.saucedemo.com")
+    # 1. 创建 LoginPage 实例
+    login_page = LoginPage(page)
 
-    # 2. 使用显式等待：等待用户名输入框可见并输入（最多等待 10 秒）
-    page.wait_for_selector("#user-name", state="visible", timeout=10000)
-    page.fill("#user-name", "standard_user")
+    # 2. 打开登录页面
+    login_page.navigate()
 
-    # 3. 等待密码输入框可见并输入
-    page.fill("#password", "secret_sauce")
+    # 3. 执行登录操作
+    login_page.login("standard_user", "secret_sauce")
 
-    # 4. 点击登录按钮
-    page.click("#login-button")
-
-    # 5. 等待商品列表加载完成，并验证指定商品可见
-    #    使用 expect 配合 to_be_visible() 进行智能等待
-    expect(page.locator("text=Sauce Labs Backpack")).to_be_visible(timeout=10000)
+    # 4. 使用 page object 获取商品并断言
+    item = login_page.get_inventory_item("Sauce Labs Backpack")
+    assert item.is_visible()
